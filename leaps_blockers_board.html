@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1600">
+<title>What's Getting In Our Way or Leaps Us Ahead</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #E8F1FB; color: #032D60; user-select: none; }
+
+/* ── Header ── */
+.page-header {
+  background: #032D60; color: #fff;
+  padding: 16px 32px 13px;
+  display: flex; align-items: center; gap: 16px;
+}
+.page-header h1 { font-size: 19px; font-weight: 700; }
+.page-header .sub { font-size: 12px; opacity: 0.65; margin-left: 4px; }
+.hdr-btns { margin-left: auto; display: flex; gap: 8px; }
+.hdr-btns button {
+  border: none; border-radius: 6px; padding: 7px 14px;
+  font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
+}
+
+/* ── Chevron tab bar ── */
+.chevron-bar {
+  display: flex; align-items: stretch;
+  background: #021e42; padding: 14px 28px; gap: 0;
+  overflow-x: auto;
+}
+.chev-wrap { display: flex; align-items: center; }
+.chev-btn {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  height: 44px; min-width: 148px; padding: 0 28px 0 36px;
+  font-size: 11.5px; font-weight: 700; color: rgba(255,255,255,0.6);
+  background: #1a3a5c; border: none; cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%, 16px 50%);
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap; text-align: center; gap: 6px;
+}
+.chev-wrap:first-child .chev-btn { clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%); padding-left: 20px; }
+.chev-btn:hover { color: #fff; background: #2a5a8c; }
+.chev-btn.active { color: #fff; }
+.chev-btn .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(255,255,255,0.25); font-size: 9px; font-weight: 800; flex-shrink: 0;
+}
+.chev-btn.active .num { background: rgba(255,255,255,0.5); }
+.merged-tag { font-size: 8px; background: #FFC107; color: #333; padding: 1px 4px; border-radius: 6px; }
+
+/* ── Tab panels ── */
+.tab-panel { display: none; padding: 24px 32px 48px; }
+.tab-panel.active { display: block; }
+
+/* ── Swim lane header ── */
+.swim-header {
+  display: grid; grid-template-columns: 120px 1fr;
+  gap: 0; margin-bottom: 2px;
+}
+.swim-label-col { display: flex; align-items: center; }
+.swim-title {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: #555; padding: 0 8px;
+}
+
+/* ── Swim lane ── */
+.swim-lane {
+  display: grid; grid-template-columns: 120px 1fr;
+  gap: 0; margin-bottom: 4px;
+}
+.swim-label {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px 0 0 8px;
+  padding: 12px 8px; text-align: center;
+}
+.swim-label .sl-text {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+}
+.swim-lane.leaps .swim-label { background: #C8F0D8; }
+.swim-lane.leaps .sl-text { color: #1E7E34; }
+.swim-lane.blockers .swim-label { background: #FFD6D6; }
+.swim-lane.blockers .sl-text { color: #C0392B; }
+
+.swim-content {
+  background: #fff; border-radius: 0 8px 8px 0;
+  padding: 12px 14px 14px; min-height: 130px;
+  border: 1.5px solid #D8EDFF; border-left: none;
+}
+.swim-lane.leaps .swim-content { border-color: #b8e6c8; background: #F4FBF4; }
+.swim-lane.blockers .swim-content { border-color: #f5c0c0; background: #FFF5F5; }
+
+.stickies-row {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; min-height: 60px;
+}
+
+/* ── Sticky ── */
+.sticky {
+  border-radius: 4px; padding: 8px 26px 8px 10px;
+  font-size: 11px; line-height: 1.45;
+  box-shadow: 1px 2px 5px rgba(0,0,0,0.10);
+  cursor: grab; position: relative; outline: none;
+  word-break: break-word; min-width: 140px; max-width: 220px;
+  flex: 0 0 auto;
+  transition: box-shadow 0.1s;
+}
+.sticky:active { cursor: grabbing; }
+.sticky.dragging { opacity: 0.4; transform: rotate(2deg); }
+.sticky.green { background: #D4F5D4; border-bottom: 2.5px solid #5CB85C; }
+.sticky.pink  { background: #FFD6D6; border-bottom: 2.5px solid #E06060; }
+.sticky.teal  { background: #D6F0F5; border-bottom: 2.5px solid #0B7A75; }
+.sticky:focus { box-shadow: 0 0 0 2px #0070D2; }
+.sticky .del-btn {
+  position: absolute; top: 4px; right: 5px;
+  font-size: 11px; color: rgba(0,0,0,0.25);
+  cursor: pointer; background: none; border: none; padding: 0; display: none;
+}
+.sticky:hover .del-btn { display: block; }
+.sticky .del-btn:hover { color: #C0392B; }
+
+.add-btn {
+  padding: 6px 12px; font-size: 11px; font-weight: 600;
+  color: #888; background: none; border: 1.5px dashed #ccc;
+  border-radius: 4px; cursor: pointer; flex-shrink: 0; align-self: flex-start; margin-top: 2px;
+  transition: color 0.12s, border-color 0.12s;
+}
+.add-btn:hover { color: #0070D2; border-color: #0070D2; }
+
+/* drag-over */
+.swim-content.drag-over.leaps-zone   { background: #C8F0D8; border-color: #5CB85C; border-style: solid; }
+.swim-content.drag-over.blockers-zone { background: #FFD6D6; border-color: #E06060; border-style: solid; }
+.swim-content.drag-over.voc-zone    { background: #C8E8F0; border-color: #0B7A75; border-style: solid; }
+
+/* ── Divider ── */
+.section-divider {
+  margin: 24px 0 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-divider hr { flex: 1; border: none; border-top: 1.5px solid #D8EDFF; }
+.section-divider span {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: #0B7A75; white-space: nowrap;
+}
+
+/* ── VoC section ── */
+.voc-section {
+  background: #fff; border: 2px solid #0B7A75;
+  border-radius: 12px; padding: 16px 20px 20px;
+}
+.voc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.voc-icon { font-size: 20px; }
+.voc-title { font-size: 14px; font-weight: 800; color: #032D60; }
+.voc-sub { font-size: 11px; color: #706E6B; font-style: italic; margin-bottom: 14px; }
+.voc-drop {
+  background: #EAF7FA; border: 1.5px dashed #70C8D8;
+  border-radius: 8px; padding: 12px 14px; min-height: 80px;
+}
+.voc-drop.drag-over { background: #C8E8F0; border-color: #0B7A75; border-style: solid; }
+
+/* ── Overview mini cards ── */
+.overview-grid {
+  display: grid; grid-template-columns: repeat(7,1fr); gap: 10px; margin-bottom: 24px;
+}
+.ov-card {
+  border-radius: 9px; overflow: hidden; border: 1.5px solid #D8EDFF;
+  cursor: pointer; transition: box-shadow 0.15s, transform 0.1s;
+}
+.ov-card:hover { box-shadow: 0 4px 14px rgba(0,112,210,0.2); transform: translateY(-2px); }
+.ov-head { padding: 9px 10px; font-size: 11px; font-weight: 700; color: #fff; text-align: center; }
+.ov-body { padding: 8px 10px; font-size: 10px; line-height: 1.5; color: #333; background: #F8FBFF; }
+.ov-count { font-size: 9px; margin-top: 4px; color: #888; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <h1>What's Getting In Our Way — or Leaps Us Ahead</h1>
+    <span class="sub">Optimizing our ways of collaborating, executing and communicating · TMT &amp; CBS · Boston FY27 Q2</span>
+  </div>
+  <div class="hdr-btns">
+    <button onclick="exportCSV()" style="background:#34A853;color:#fff;">⬇ Export CSV</button>
+    <button onclick="takeScreenshot()" style="background:#0070D2;color:#fff;">📸 Download Screenshot</button>
+  </div>
+</div>
+
+<!-- ── Chevron bar ── -->
+<div class="chevron-bar" id="chevronBar"></div>
+
+<!-- ── Tab panels ── -->
+<div class="tab-panel active" id="tab-overview"></div>
+<div class="tab-panel" id="tab-p1"></div>
+<div class="tab-panel" id="tab-p2"></div>
+<div class="tab-panel" id="tab-p3"></div>
+<div class="tab-panel" id="tab-p4"></div>
+<div class="tab-panel" id="tab-p5"></div>
+<div class="tab-panel" id="tab-p6"></div>
+<div class="tab-panel" id="tab-p7"></div>
+
+<script>
+const phases = [
+  { id: 'overview', label: 'Overview', merged: false },
+  { id: 'p1', label: 'Phase 1: Assess', merged: false },
+  { id: 'p2', label: 'Phase 2: Design', merged: false },
+  { id: 'p3', label: 'Phase 3: Dev', merged: true },
+  { id: 'p4', label: 'Phase 4: QA', merged: false },
+  { id: 'p5', label: 'Phase 5: Launch', merged: false },
+  { id: 'p6', label: 'Phase 6: Support', merged: false },
+  { id: 'p7', label: 'Phase 7: Growth', merged: false }
+];
+
+let stickies = {};
+let draggedElement = null;
+
+function initChevronBar() {
+  const bar = document.getElementById('chevronBar');
+  phases.forEach((phase, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'chev-wrap';
+    const btn = document.createElement('button');
+    btn.className = `chev-btn ${idx === 0 ? 'active' : ''}`;
+    btn.onclick = () => switchTab(phase.id, btn);
+    btn.innerHTML = `<span class="num">${idx}</span> ${phase.label} ${phase.merged ? '<span class="merged-tag">MERGED</span>' : ''}`;
+    wrap.appendChild(btn);
+    bar.appendChild(wrap);
+  });
+}
+
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.chev-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${tabId}`).classList.add('active');
+  btn.classList.add('active');
+  renderTab(tabId);
+}
+
+function renderTab(tabId) {
+  const panel = document.getElementById(`tab-${tabId}`);
+  if (tabId === 'overview') {
+    renderOverview(panel);
+  } else {
+    renderPhase(panel, tabId);
+  }
+}
+
+function renderOverview(panel) {
+  panel.innerHTML = '<div class="overview-grid"></div>';
+  const grid = panel.querySelector('.overview-grid');
+  phases.slice(1).forEach((phase, idx) => {
+    const card = document.createElement('div');
+    card.className = 'ov-card';
+    card.innerHTML = `
+      <div class="ov-head" style="background: #0070D2;">#${idx + 1}</div>
+      <div class="ov-body">
+        <div>${phase.label}</div>
+        <div class="ov-count">4 items</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderPhase(panel, phaseId) {
+  panel.innerHTML = `
+    <div class="swim-header">
+      <div class="swim-label-col"></div>
+      <div class="swim-title">Leaps & Blockers</div>
+    </div>
+    <div class="swim-lane leaps" id="leaps-${phaseId}">
+      <div class="swim-label"><span class="sl-text">🚀 Leaps</span></div>
+      <div class="swim-content leaps-zone" ondrop="dropSticky(event, 'leaps', '${phaseId}')" ondragover="dragOver(event)" ondragleave="dragLeave(event)">
+        <div class="stickies-row" id="stickies-leaps-${phaseId}"></div>
+        <button class="add-btn" onclick="addSticky('leaps', '${phaseId}')">+ Add item</button>
+      </div>
+    </div>
+    <div class="swim-lane blockers" id="blockers-${phaseId}">
+      <div class="swim-label"><span class="sl-text">🚧 Blockers</span></div>
+      <div class="swim-content blockers-zone" ondrop="dropSticky(event, 'blockers', '${phaseId}')" ondragover="dragOver(event)" ondragleave="dragLeave(event)">
+        <div class="stickies-row" id="stickies-blockers-${phaseId}"></div>
+        <button class="add-btn" onclick="addSticky('blockers', '${phaseId}')">+ Add item</button>
+      </div>
+    </div>
+    <div class="section-divider"><hr><span>Voice of Customer</span></div>
+    <div class="voc-section">
+      <div class="voc-header"><span class="voc-icon">👂</span><span class="voc-title">VoC Feedback</span></div>
+      <div class="voc-sub">Customer insights and feedback</div>
+      <div class="voc-drop" ondrop="dropSticky(event, 'voc', '${phaseId}')" ondragover="dragOver(event)" ondragleave="dragLeave(event)">
+        <div class="stickies-row" id="stickies-voc-${phaseId}"></div>
+        <button class="add-btn" onclick="addSticky('voc', '${phaseId}')">+ Add VoC</button>
+      </div>
+    </div>
+  `;
+  renderStickies(phaseId);
+}
+
+function renderStickies(phaseId) {
+  if (!stickies[phaseId]) stickies[phaseId] = { leaps: [], blockers: [], voc: [] };
+  const data = stickies[phaseId];
+  
+  ['leaps', 'blockers', 'voc'].forEach(type => {
+    const container = document.getElementById(`stickies-${type}-${phaseId}`);
+    if (container) {
+      container.innerHTML = '';
+      data[type].forEach((text, idx) => {
+        const sticky = document.createElement('div');
+        sticky.className = `sticky ${type === 'voc' ? 'teal' : type === 'leaps' ? 'green' : 'pink'}`;
+        sticky.draggable = true;
+        sticky.ondragstart = (e) => { draggedElement = sticky; };
+        sticky.ondragend = () => { draggedElement = null; };
+        sticky.innerHTML = `${text}<button class="del-btn" onclick="deleteSticky('${phaseId}', '${type}', ${idx})">✕</button>`;
+        container.appendChild(sticky);
+      });
+    }
+  });
+}
+
+function addSticky(type, phaseId) {
+  const text = prompt(`Add new ${type} item:`);
+  if (text) {
+    if (!stickies[phaseId]) stickies[phaseId] = { leaps: [], blockers: [], voc: [] };
+    stickies[phaseId][type].push(text);
+    renderStickies(phaseId);
+  }
+}
+
+function deleteSticky(phaseId, type, idx) {
+  if (stickies[phaseId]) {
+    stickies[phaseId][type].splice(idx, 1);
+    renderStickies(phaseId);
+  }
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function dropSticky(e, type, phaseId) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function exportCSV() {
+  let csv = 'Phase,Type,Item\n';
+  Object.keys(stickies).forEach(phaseId => {
+    const data = stickies[phaseId];
+    ['leaps', 'blockers', 'voc'].forEach(type => {
+      data[type].forEach(text => {
+        csv += `${phaseId},${type},"${text.replace(/"/g, '""')}"\n`;
+      });
+    });
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'leaps_blockers.csv';
+  a.click();
+}
+
+function takeScreenshot() {
+  alert('Screenshot feature requires html2canvas library. Implement separately.');
+}
+
+initChevronBar();
+switchTab('overview', document.querySelector('.chev-btn'));
+</script>
+</body>
+</html>
